@@ -1,0 +1,32 @@
+cmake_minimum_required (VERSION 3.5)
+
+project(Snake)
+
+set(PROJECT_SOURCE_DIR src/)
+set(PROJECT_INCLUDE_DIR src/)
+
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+file(GLOB_RECURSE SANDBOX_SOURCE_FILES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/*.cpp)
+file(GLOB_RECURSE SANDBOX_INCLUDE_FILES CONFIGURE_DEPENDS ${PROJECT_INCLUDE_DIR}/*.hpp)
+
+add_executable(${PROJECT_NAME} ${SANDBOX_SOURCE_FILES} ${PROJECT_INCLUDE_DIR})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_INCLUDE_DIR})
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Farfocel)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX -d)
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME}-Binary/)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
+# on windows, when using dynamic SFML libs, copy all the .dlls (excluding openal.dll) to Sandbox's bin folder.
+if(WIN32 AND BUILD_SHARED_LIBS)
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}> COMMAND_EXPAND_LISTS)
+endif()
+
+
+install(TARGETS ${PROJECT_NAME})
