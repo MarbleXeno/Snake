@@ -55,8 +55,8 @@ namespace fr{
 
             HandleInput();
 
-            Update();
             ImGui::SFML::Update(renderer.GetRenderWindow(), renderer.GetDeltaTime());
+            Update();
 
             renderer.GetRenderWindow().clear(sf::Color::Cyan);
             Render();

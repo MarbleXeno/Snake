@@ -1,7 +1,7 @@
 #include "Gameplay.hpp"
 
 gm::Gameplay::Gameplay(const std::string& id, fr::Renderer& renderer, sf::Font& font)
-	: IScene(id), mRenderer(&renderer), mFont(&font), mResourcesManager(), mInputManager(mRenderer->GetRenderWindow()), mBoard(*mRenderer)
+	: IScene(id), mRenderer(&renderer), mFont(&font), mResourcesManager(), mInputManager(mRenderer->GetRenderWindow()), mBoard(*mRenderer, 20.f)
 {
 }
 
@@ -24,12 +24,12 @@ void gm::Gameplay::HandleInput()
 
 void gm::Gameplay::Update()
 {
-	mBoard.Update(10.f);
+	mBoard.Update();
 }
 
 void gm::Gameplay::Draw()
 {
-	mRenderer->GetRenderWindow().clear(sf::Color::Blue);
+	mRenderer->GetRenderWindow().clear(sf::Color::Black);
 
 	mBoard.Draw();
 }

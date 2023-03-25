@@ -1,12 +1,12 @@
 #include "Snake.hpp"
 
 gm::Snake::Snake()
-	: mAlternativeControls(false)
+	: mAlternativeControls(false), mSnakeName("Snake"), mSnakeScore(0), mNextCellMovingDirection(CellMovingDirection::UP)
 {
 }
 
-gm::Snake::Snake(Cell& initCell, const bool& alternativeControls)
-	: mAlternativeControls(alternativeControls), mNextCellMovingDirection(CellMovingDirection::UP)
+gm::Snake::Snake(Cell& initCell, const std::string& snakeName, const bool& alternativeControls)
+	: mAlternativeControls(alternativeControls), mSnakeName(snakeName), mSnakeScore(0), mNextCellMovingDirection(CellMovingDirection::UP)
 {
 	mSnakeCells.push_back(Cell(CellType::SNAKE_HEAD, { initCell.GetCellGridPosition().x, initCell.GetCellGridPosition().y }, {initCell.GetFloatRect().left, initCell.GetFloatRect().height * (initCell.GetCellGridPosition().y), initCell.GetFloatRect().width, initCell.GetFloatRect().height}, sf::Color::Yellow));
 	mSnakeCells.back().SetCellMovingDirection(CellMovingDirection::UP);
@@ -24,7 +24,7 @@ gm::Snake::~Snake()
 
 }
 
-gm::Cell gm::Snake::Move(Cell& nextCell)
+gm::Cell gm::Snake::Move(Cell& nextCell, const bool& removeTail)
 {
 	// set old snake head as a normal body part
 	mSnakeCells.front().SetCellType(CellType::SNAKE_BODY);
@@ -37,21 +37,26 @@ gm::Cell gm::Snake::Move(Cell& nextCell)
 
 	// remove old tail from the snake
 	Cell oldTail = mSnakeCells.back();
-	mSnakeCells.pop_back();
+	if (removeTail) {
+		mSnakeCells.pop_back();
+	}
 
 	// set the last snake cell as the current tail
 	mSnakeCells.back().SetCellType(CellType::SNAKE_TAIL);
 	mSnakeCells.back().SetColor(sf::Color::Blue);
 
 	// return the old snake tail so that it can be applied to the board as just a normal cell
-	oldTail.SetCellType(CellType::EMPTY);
-	oldTail.SetColor(sf::Color::Black);
+	if (removeTail) {
+		oldTail.SetCellType(CellType::EMPTY);
+		oldTail.SetColor(sf::Color::Black);
+	}
 	return oldTail;
 }
 
 void gm::Snake::Grow(Cell& nextCell)
 {
-
+	Move(nextCell, false);
+	mSnakeScore++;
 }
 
 void gm::Snake::SetNextCellMovingDirection(const CellMovingDirection& movingDirection)
@@ -62,6 +67,27 @@ void gm::Snake::SetNextCellMovingDirection(const CellMovingDirection& movingDire
 const gm::CellMovingDirection& gm::Snake::GetNextCellMovingDirection()
 {
 	return mNextCellMovingDirection;
+}
+
+const std::string& gm::Snake::GetSnakeName()
+{
+	return mSnakeName;
+}
+
+const std::uint32_t& gm::Snake::GetSnakeScore()
+{
+	return mSnakeScore;
+}
+
+const bool gm::Snake::IsSelfIntersecting(Cell& nextCell)
+{
+	for (auto& cell : mSnakeCells) {
+		if (nextCell.GetCellGridPosition() == cell.GetCellGridPosition()) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 std::deque<gm::Cell>& gm::Snake::GetSnakeCells()

@@ -5,6 +5,8 @@
 #include <Farfocel/Core/Renderer.hpp>
 #include <Farfocel/Managers/InputManager.hpp>
 
+#include <imgui.h>
+#include <imgui-SFML.h>
 
 #include "Cell.hpp"
 #include "Snake.hpp"
@@ -12,17 +14,21 @@
 namespace gm {
 	class Board {
 	public:
-		Board(fr::Renderer& renderer);
+		Board(fr::Renderer& renderer, const float& tickDuration);
 		~Board();
 
 				//each cell size will be calculated automatically
 		void GenerateBoard(const sf::Vector2i& cellCount, const sf::Vector2f& gridSize, const sf::Color& emptyCellColor);
+		
 		void PlaceBuff();
 		
 		Cell GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& currentMovingDirection);
 		void ApplySnakeCellsToBoard();
+
+		const bool CheckForBoardBoundary(const sf::Vector2i index);
+		const bool CheckForSnakeCrash(Cell& cell);
 		
-		void Update(const float& tickSpeed);
+		void Update();
 
 		void Draw();
 	private:
@@ -34,6 +40,7 @@ namespace gm {
 
 		std::vector<Snake> mSnakes;
 
+		float mTickDuration;
 		float mBoardUpdateElapsedTime;
 
 		Cell** mBoardCellArray;

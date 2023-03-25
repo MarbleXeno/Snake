@@ -1,10 +1,9 @@
 #include "Board.hpp"
 
-gm::Board::Board(fr::Renderer& renderer)
-	: mRenderer(&renderer), mInputManager(mRenderer->GetRenderWindow()), mSnakes(), mBoardCellArray(), mBoardUpdateElapsedTime(0)
+gm::Board::Board(fr::Renderer& renderer, const float& tickDuration)
+	: mRenderer(&renderer), mInputManager(mRenderer->GetRenderWindow()), mSnakes(), mBoardCellArray(), mBoardUpdateElapsedTime(0), mTickDuration(tickDuration)
 {
-	srand(time(NULL));
-
+	srand((unsigned) time(NULL));
 }
 
 gm::Board::~Board()
@@ -36,37 +35,42 @@ void gm::Board::GenerateBoard(const sf::Vector2i& cellCount, const sf::Vector2f&
 	}
 
 
-	mSnakes.push_back(Snake(mBoardCellArray[9][8], false));
-	mSnakes.push_back(Snake(mBoardCellArray[3][3], true));
+	mSnakes.push_back(Snake(mBoardCellArray[9][15], "Aspirant do 2 LO", false));
 	ApplySnakeCellsToBoard();
+	PlaceBuff();
 }
 
-void gm::Board::Update(const float& tickSpeed)
+void gm::Board::Update()
 {
+	ImGui::Begin("Board Controls");
+	ImGui::SliderFloat("Tick Duration [ms]", &mTickDuration, 0.f, 100.f);
+	
+	
+
 	for (auto& snake : mSnakes) {
 		CellMovingDirection snakeMovingDirection;
 
 		if (snake.GetAlternativeControls()) {
-			if (mInputManager.IsPressed(sf::Keyboard::Up))
+			if (mInputManager.IsPressed(sf::Keyboard::Up) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::DOWN)
 				snakeMovingDirection = CellMovingDirection::UP;
-			else if (mInputManager.IsPressed(sf::Keyboard::Down))
+			else if (mInputManager.IsPressed(sf::Keyboard::Down) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::UP)
 				snakeMovingDirection = CellMovingDirection::DOWN;
-			else if (mInputManager.IsPressed(sf::Keyboard::Left))
+			else if (mInputManager.IsPressed(sf::Keyboard::Left) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::RIGHT)
 				snakeMovingDirection = CellMovingDirection::LEFT;
-			else if (mInputManager.IsPressed(sf::Keyboard::Right))
+			else if (mInputManager.IsPressed(sf::Keyboard::Right) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::LEFT)
 				snakeMovingDirection = CellMovingDirection::RIGHT;
 			else
 				snakeMovingDirection = snake.GetSnakeHead().GetCellMovingDirection();
 		}
 		else
 		{
-			if (mInputManager.IsPressed(sf::Keyboard::W))
+			if (mInputManager.IsPressed(sf::Keyboard::W) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::DOWN)
 				snakeMovingDirection = CellMovingDirection::UP;
-			else if (mInputManager.IsPressed(sf::Keyboard::S))
+			else if (mInputManager.IsPressed(sf::Keyboard::S) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::UP)
 				snakeMovingDirection = CellMovingDirection::DOWN;
-			else if (mInputManager.IsPressed(sf::Keyboard::A))
+			else if (mInputManager.IsPressed(sf::Keyboard::A) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::RIGHT)
 				snakeMovingDirection = CellMovingDirection::LEFT;
-			else if (mInputManager.IsPressed(sf::Keyboard::D))
+			else if (mInputManager.IsPressed(sf::Keyboard::D) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::LEFT)
 				snakeMovingDirection = CellMovingDirection::RIGHT;
 			else
 				snakeMovingDirection = snake.GetSnakeHead().GetCellMovingDirection();
@@ -74,43 +78,112 @@ void gm::Board::Update(const float& tickSpeed)
 
 		snake.GetSnakeHead().SetCellMovingDirection(snakeMovingDirection);
 		snake.SetNextCellMovingDirection(snakeMovingDirection);
+	
+		if (ImGui::Button("Grow Snake")) {
+			Cell& nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
+			snake.Grow(nextMovingCell);
+		}
 	}
 
 	mBoardUpdateElapsedTime += mRenderer->GetDeltaTimeFloat();
 
-	if (mBoardUpdateElapsedTime > tickSpeed * mRenderer->GetDeltaTimeFloat()) {
+	if (mBoardUpdateElapsedTime > mTickDuration * mRenderer->GetDeltaTimeFloat()) {
 		for (auto& snake : mSnakes) {
-			Cell nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
-			Cell oldTailCell = snake.Move(nextMovingCell);
-			mBoardCellArray[oldTailCell.GetCellGridPosition().x][oldTailCell.GetCellGridPosition().y] = oldTailCell;
-		}
-		ApplySnakeCellsToBoard();
+			Cell& nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
+			
+			if (snake.IsSelfIntersecting(nextMovingCell)) {
+				ImGui::End();
+				mRenderer->GetRenderWindow().close();
+				return;
+				// execute like a crazy thing here you know
+			}
 
+			if (nextMovingCell.GetCellType() == CellType::BUFF) {
+				snake.Grow(nextMovingCell);
+				if(mTickDuration > 2)
+					mTickDuration--;
+				PlaceBuff();
+			}
+
+			if (nextMovingCell.GetCellType() == CellType::EMPTY) {
+				Cell oldTailCell = snake.Move(nextMovingCell, true);
+				mBoardCellArray[oldTailCell.GetCellGridPosition().x][oldTailCell.GetCellGridPosition().y] = oldTailCell;
+			}
+		
+			ApplySnakeCellsToBoard();
+			
+		}
 		mBoardUpdateElapsedTime = 0.f;
 	}
+	ImGui::End();
 }
 
 gm::Cell gm::Board::GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& currentMovingDirection)
 {
 	Cell nextCell;
-
+	sf::Vector2i nextCellIndex;
 	switch (currentMovingDirection)
 	{
 	case CellMovingDirection::UP:
-		nextCell = mBoardCellArray[snakeHeadCell.GetCellGridPosition().x][snakeHeadCell.GetCellGridPosition().y - 1];
-		nextCell.SetCellMovingDirection(currentMovingDirection);
+		nextCellIndex.x = snakeHeadCell.GetCellGridPosition().x;
+		nextCellIndex.y = snakeHeadCell.GetCellGridPosition().y - 1;
+
+		if (CheckForBoardBoundary(nextCellIndex)) {
+			nextCell = mBoardCellArray[nextCellIndex.x][nextCellIndex.y];
+			nextCell.SetCellMovingDirection(currentMovingDirection);
+		}
+		else
+		{
+			// execute YOU LOOSE SCREEN
+			mRenderer->GetRenderWindow().close();
+		}
 		break;
 	case CellMovingDirection::DOWN:
-		nextCell = mBoardCellArray[snakeHeadCell.GetCellGridPosition().x][snakeHeadCell.GetCellGridPosition().y + 1];
-		nextCell.SetCellMovingDirection(currentMovingDirection);
+		nextCellIndex.x = snakeHeadCell.GetCellGridPosition().x;
+		nextCellIndex.y = snakeHeadCell.GetCellGridPosition().y + 1;
+
+		if (CheckForBoardBoundary(nextCellIndex)) {
+			nextCell = mBoardCellArray[nextCellIndex.x][nextCellIndex.y];
+			nextCell.SetCellMovingDirection(currentMovingDirection);
+		}
+		else
+		{
+			// execute YOU LOOSE SCREEN
+			mRenderer->GetRenderWindow().close();
+		}
+
 		break;
 	case CellMovingDirection::LEFT:
-		nextCell = mBoardCellArray[snakeHeadCell.GetCellGridPosition().x - 1][snakeHeadCell.GetCellGridPosition().y];
-		nextCell.SetCellMovingDirection(currentMovingDirection);
+		nextCellIndex.x = snakeHeadCell.GetCellGridPosition().x - 1;
+		nextCellIndex.y = snakeHeadCell.GetCellGridPosition().y;
+
+		if (CheckForBoardBoundary(nextCellIndex)) {
+			nextCell = mBoardCellArray[nextCellIndex.x][nextCellIndex.y];
+			nextCell.SetCellMovingDirection(currentMovingDirection);
+		}
+		else
+		{
+			// execute YOU LOOSE SCREEN
+			mRenderer->GetRenderWindow().close();
+		}
+
 		break;
 	case CellMovingDirection::RIGHT:
-		nextCell = mBoardCellArray[snakeHeadCell.GetCellGridPosition().x + 1][snakeHeadCell.GetCellGridPosition().y];
-		nextCell.SetCellMovingDirection(currentMovingDirection);
+		nextCellIndex.x = snakeHeadCell.GetCellGridPosition().x + 1;
+		nextCellIndex.y = snakeHeadCell.GetCellGridPosition().y;
+
+		if (CheckForBoardBoundary(nextCellIndex)) {
+			nextCell = mBoardCellArray[nextCellIndex.x][nextCellIndex.y];
+			nextCell.SetCellMovingDirection(currentMovingDirection);
+		}
+		else
+		{
+
+			// execute YOU LOOSE SCREEN
+			mRenderer->GetRenderWindow().close();
+
+		}
+
 		break;
 	default:
 		break;
@@ -128,9 +201,27 @@ void gm::Board::ApplySnakeCellsToBoard()
 	}
 }
 
+const bool gm::Board::CheckForBoardBoundary(const sf::Vector2i index)
+{
+	if (index.x < 0 || index.y < 0) { return false; }
+	else if (index.x >= mCellCount.x || index.y >= mCellCount.y) { return false; }
+	else { return true; }
+
+
+}
+
 void gm::Board::PlaceBuff()
 {
+	sf::Vector2i buffCellIndex;
+	buffCellIndex.x = rand() % mCellCount.x;
+	buffCellIndex.y = rand() % mCellCount.y;
 
+	Cell& buffCell = mBoardCellArray[buffCellIndex.x][buffCellIndex.y];
+
+	if (buffCell.GetCellType() != CellType::EMPTY) { PlaceBuff(); }
+
+	buffCell.SetCellType(CellType::BUFF);
+	buffCell.SetColor(sf::Color::Cyan);
 }
 
 void gm::Board::Draw()
