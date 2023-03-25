@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <SFML/Graphics.hpp>
 #include <Farfocel/Core/Renderer.hpp>
+#include <Farfocel/Managers/InputManager.hpp>
+
 
 #include "Cell.hpp"
 #include "Snake.hpp"
@@ -15,16 +17,24 @@ namespace gm {
 
 				//each cell size will be calculated automatically
 		void GenerateBoard(const sf::Vector2i& cellCount, const sf::Vector2f& gridSize, const sf::Color& emptyCellColor);
-		void Update(const float& tickSpeed);
 		void PlaceBuff();
+		
+		Cell GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& currentMovingDirection);
+		void ApplySnakeCellsToBoard();
+		
+		void Update(const float& tickSpeed);
 
 		void Draw();
 	private:
 		fr::Renderer* mRenderer;
+		fr::InputManager mInputManager;
+
 		sf::Vector2i mCellCount;
 		sf::Vector2f mCellSize;
 
-		Snake mSnake;
+		std::vector<Snake> mSnakes;
+
+		float mBoardUpdateElapsedTime;
 
 		Cell** mBoardCellArray;
 	};

@@ -9,20 +9,27 @@ namespace gm {
 		SNAKE_TAIL = 4
 	};
 
+	enum class CellMovingDirection {
+		UP = 0,
+		DOWN = 1,
+		LEFT = 2,
+		RIGHT = 3
+	};
+
 	class Cell : public sf::Drawable {
 	public:
 		Cell() 
-			: mCellType(CellType::EMPTY), mCellGridPosition({0,0}), mCellRect(), mDrawSprite(false)
+			: mCellType(CellType::EMPTY), mCellMovingDirection(CellMovingDirection::DOWN), mCellGridPosition({0,0}), mCellRect()
 		{
 		
 		}
 
 		Cell(const CellType& cellType, const sf::Vector2i cellGridPosition, const sf::FloatRect& cellRect, const sf::Color& cellShapeColor)
-			: mCellType(cellType), mCellGridPosition(cellGridPosition), mCellRect(cellRect), mCellSprite(), mDrawSprite(false), mCellShape({ cellRect.width, cellRect.height })
+			: mCellType(cellType), mCellMovingDirection(CellMovingDirection::DOWN), mCellGridPosition(cellGridPosition), mCellRect(cellRect), mCellShape({ cellRect.width, cellRect.height })
 		{
 			mCellShape.setFillColor(cellShapeColor);
 			mCellShape.setOutlineColor(sf::Color::White);
-			mCellShape.setOutlineThickness(2.f);
+			mCellShape.setOutlineThickness(1.f);
 			mCellShape.setPosition({ cellRect.left, cellRect.top });
 		}
 		~Cell() {
@@ -37,8 +44,25 @@ namespace gm {
 			mCellType = cellType;
 		}
 
+		void SetCellMovingDirection(const CellMovingDirection& cellMovingDirection) {
+			mCellMovingDirection = cellMovingDirection;
+		}
+
+		void SetCellPosition(const sf::Vector2i& cellGridPosition) {
+			mCellRect.left = mCellRect.width * cellGridPosition.x;
+			mCellRect.top = mCellRect.height * cellGridPosition.y;
+			
+			mCellGridPosition = cellGridPosition;
+
+			mCellShape.setPosition({ mCellRect.left, mCellRect.top });
+		}
+
 		const CellType& GetCellType() {
 			return mCellType;
+		}
+
+		const CellMovingDirection& GetCellMovingDirection() {
+			return mCellMovingDirection;
 		}
 
 		const sf::FloatRect& GetFloatRect() {
@@ -49,24 +73,17 @@ namespace gm {
 			return mCellGridPosition;
 		}
 
-		void SetCellTexture(const sf::Texture& texture) {
-			mCellSprite.setTexture(texture);
-			mDrawSprite = true;
-		}
-
 		void draw(sf::RenderTarget& target, sf::RenderStates states) const {
 			target.draw(mCellShape);
-			if (mDrawSprite)
-				target.draw(mCellSprite);
 		}
 
 	protected:
 		CellType mCellType;
+		CellMovingDirection mCellMovingDirection;
+		
 		sf::Vector2i mCellGridPosition;
 		sf::FloatRect mCellRect;
 		
-		bool mDrawSprite;
 		sf::RectangleShape mCellShape;
-		sf::Sprite mCellSprite;
 	};
 }

@@ -24,8 +24,6 @@ void gm::Gameplay::HandleInput()
 
 void gm::Gameplay::Update()
 {
-	mInputManager.UpdateKeyboard();
-	mInputManager.UpdateMouse();
 	mBoard.Update(10.f);
 }
 

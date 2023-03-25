@@ -13,7 +13,7 @@ void gm::Menu::Start()
 {
 	mSnakeText = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f - 100.f }, "VSnake", 100, 2, sf::Color::White, *mFont);
 
-	mStartButton = frg::Button({ mRenderer->GetRenderWindow().getSize().x/2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 200.f}, "START", 50, sf::Color::Color(0,0,0,0), sf::Color::White, *mFont);
+	mStartButton = frg::Button({ mRenderer->GetRenderWindow().getSize().x/2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 200.f}, "START", 50, sf::Color(0,0,0,0), sf::Color::White, *mFont);
 	
 	mCreditsText = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 300.f }, "Farfocel © 2 LO Raciborz 2m", 20, 2, sf::Color::White, *mFont);
 	
