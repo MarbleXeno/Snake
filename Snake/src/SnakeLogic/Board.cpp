@@ -1,9 +1,17 @@
 #include "Board.hpp"
 
-gm::Board::Board(fr::Renderer& renderer, const float& tickDuration)
-	: mRenderer(&renderer), mInputManager(mRenderer->GetRenderWindow()), mSnakes(), mBoardCellArray(), mBoardUpdateElapsedTime(0), mTickDuration(tickDuration)
+gm::Board::Board(fr::Renderer& renderer, const float& tickDuration, const sf::Font& font)
+	: mRenderer(&renderer), mInputManager(mRenderer->GetRenderWindow()), mSnakes(), mBoardCellArray(), mBoardUpdateElapsedTime(0), mTickDuration(tickDuration), mFont(&font), mIsOver(false)
 {
 	srand((unsigned) time(NULL));
+
+	mCurrentScore = frg::Text({ 600 / 2, 620.f }, "Wynik: 0", 20, 2, sf::Color::White, *mFont);
+	mHighestScore = frg::Text({ 600 / 2.f, 650.f }, "Najwiekszy wynik: 0", 20, 2, sf::Color::White, *mFont);
+
+	mResourcesManager.LoadTexture("snakeHead", "res/snake_head.png");
+	mResourcesManager.LoadTexture("snakeBody", "res/snake_body.png");
+	mResourcesManager.LoadTexture("snakeTail", "res/snake_tail.png");
+	mResourcesManager.LoadTexture("buff", "res/buff.png");
 }
 
 gm::Board::~Board()
@@ -34,7 +42,6 @@ void gm::Board::GenerateBoard(const sf::Vector2i& cellCount, const sf::Vector2f&
 		}
 	}
 
-
 	mSnakes.push_back(Snake(mBoardCellArray[9][15], "Aspirant do 2 LO", false));
 	ApplySnakeCellsToBoard();
 	PlaceBuff();
@@ -42,35 +49,34 @@ void gm::Board::GenerateBoard(const sf::Vector2i& cellCount, const sf::Vector2f&
 
 void gm::Board::Update()
 {
+
 	ImGui::Begin("Board Controls");
 	ImGui::SliderFloat("Tick Duration [ms]", &mTickDuration, 0.f, 100.f);
-	
-	
 
 	for (auto& snake : mSnakes) {
 		CellMovingDirection snakeMovingDirection;
 
 		if (snake.GetAlternativeControls()) {
-			if (mInputManager.IsPressed(sf::Keyboard::Up) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::DOWN)
+			if (mInputManager.IsPressed(sf::Keyboard::Up) && snake.GetNextCellMovingDirection() != CellMovingDirection::DOWN)
 				snakeMovingDirection = CellMovingDirection::UP;
-			else if (mInputManager.IsPressed(sf::Keyboard::Down) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::UP)
+			else if (mInputManager.IsPressed(sf::Keyboard::Down) && snake.GetNextCellMovingDirection() != CellMovingDirection::UP)
 				snakeMovingDirection = CellMovingDirection::DOWN;
-			else if (mInputManager.IsPressed(sf::Keyboard::Left) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::RIGHT)
+			else if (mInputManager.IsPressed(sf::Keyboard::Left) && snake.GetNextCellMovingDirection() != CellMovingDirection::RIGHT)
 				snakeMovingDirection = CellMovingDirection::LEFT;
-			else if (mInputManager.IsPressed(sf::Keyboard::Right) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::LEFT)
+			else if (mInputManager.IsPressed(sf::Keyboard::Right) && snake.GetNextCellMovingDirection() != CellMovingDirection::LEFT)
 				snakeMovingDirection = CellMovingDirection::RIGHT;
 			else
 				snakeMovingDirection = snake.GetSnakeHead().GetCellMovingDirection();
 		}
 		else
 		{
-			if (mInputManager.IsPressed(sf::Keyboard::W) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::DOWN)
+			if (mInputManager.IsPressed(sf::Keyboard::W) && snake.GetNextCellMovingDirection() != CellMovingDirection::DOWN)
 				snakeMovingDirection = CellMovingDirection::UP;
-			else if (mInputManager.IsPressed(sf::Keyboard::S) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::UP)
+			else if (mInputManager.IsPressed(sf::Keyboard::S) && snake.GetNextCellMovingDirection() != CellMovingDirection::UP)
 				snakeMovingDirection = CellMovingDirection::DOWN;
-			else if (mInputManager.IsPressed(sf::Keyboard::A) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::RIGHT)
+			else if (mInputManager.IsPressed(sf::Keyboard::A) && snake.GetNextCellMovingDirection() != CellMovingDirection::RIGHT)
 				snakeMovingDirection = CellMovingDirection::LEFT;
-			else if (mInputManager.IsPressed(sf::Keyboard::D) && snake.GetSnakeHead().GetCellMovingDirection() != CellMovingDirection::LEFT)
+			else if (mInputManager.IsPressed(sf::Keyboard::D) && snake.GetNextCellMovingDirection() != CellMovingDirection::LEFT)
 				snakeMovingDirection = CellMovingDirection::RIGHT;
 			else
 				snakeMovingDirection = snake.GetSnakeHead().GetCellMovingDirection();
@@ -93,21 +99,26 @@ void gm::Board::Update()
 			
 			if (snake.IsSelfIntersecting(nextMovingCell)) {
 				ImGui::End();
-				mRenderer->GetRenderWindow().close();
+				mIsOver = true;
 				return;
-				// execute like a crazy thing here you know
 			}
 
-			if (nextMovingCell.GetCellType() == CellType::BUFF) {
-				snake.Grow(nextMovingCell);
-				if(mTickDuration > 2)
-					mTickDuration--;
-				PlaceBuff();
-			}
 
 			if (nextMovingCell.GetCellType() == CellType::EMPTY) {
 				Cell oldTailCell = snake.Move(nextMovingCell, true);
 				mBoardCellArray[oldTailCell.GetCellGridPosition().x][oldTailCell.GetCellGridPosition().y] = oldTailCell;
+			}
+
+			if (nextMovingCell.GetCellType() == CellType::BUFF) {
+				nextMovingCell.SetCellMovingDirection(mSnakes.back().GetNextCellMovingDirection());
+				snake.Grow(nextMovingCell);
+				
+				mCurrentScore.SetString("Wynik: " + std::to_string(snake.GetSnakeScore()));
+				mCurrentScore.SetTextPosition({ 600 / 2, 620 });
+				if(mTickDuration > 1)
+					mTickDuration -= 0.5f;
+			
+				PlaceBuff();
 			}
 		
 			ApplySnakeCellsToBoard();
@@ -134,8 +145,7 @@ gm::Cell gm::Board::GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& 
 		}
 		else
 		{
-			// execute YOU LOOSE SCREEN
-			mRenderer->GetRenderWindow().close();
+			mIsOver = true;
 		}
 		break;
 	case CellMovingDirection::DOWN:
@@ -148,8 +158,7 @@ gm::Cell gm::Board::GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& 
 		}
 		else
 		{
-			// execute YOU LOOSE SCREEN
-			mRenderer->GetRenderWindow().close();
+			mIsOver = true;
 		}
 
 		break;
@@ -163,8 +172,7 @@ gm::Cell gm::Board::GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& 
 		}
 		else
 		{
-			// execute YOU LOOSE SCREEN
-			mRenderer->GetRenderWindow().close();
+			mIsOver = true;
 		}
 
 		break;
@@ -178,10 +186,7 @@ gm::Cell gm::Board::GetNextCell(Cell& snakeHeadCell, const CellMovingDirection& 
 		}
 		else
 		{
-
-			// execute YOU LOOSE SCREEN
-			mRenderer->GetRenderWindow().close();
-
+			mIsOver = true;
 		}
 
 		break;
@@ -210,6 +215,21 @@ const bool gm::Board::CheckForBoardBoundary(const sf::Vector2i index)
 
 }
 
+void gm::Board::SetHighestScore(const std::uint32_t& score)
+{
+	mHighestScore = frg::Text({ 600 / 2.f, 650.f }, "Najwiekszy wynik: " + std::to_string(score), 20, 2, sf::Color::White, *mFont);
+}
+
+const std::uint32_t& gm::Board::GetCurrentScore()
+{
+	return mSnakes.back().GetSnakeScore();
+}
+
+const bool& gm::Board::IsOver()
+{
+	return mIsOver;
+}
+
 void gm::Board::PlaceBuff()
 {
 	sf::Vector2i buffCellIndex;
@@ -221,7 +241,7 @@ void gm::Board::PlaceBuff()
 	if (buffCell.GetCellType() != CellType::EMPTY) { PlaceBuff(); }
 
 	buffCell.SetCellType(CellType::BUFF);
-	buffCell.SetColor(sf::Color::Cyan);
+	buffCell.SetColor(sf::Color::White);
 }
 
 void gm::Board::Draw()
@@ -229,7 +249,33 @@ void gm::Board::Draw()
 	for (int row = 0; row < mCellCount.x; row++)
 	{
 		for (int column = 0; column < mCellCount.y; column++) {
+			if (mBoardCellArray[row][column].GetCellType() == CellType::EMPTY) {
+				mBoardCellArray[row][column].CanDraw(false);
+				mBoardCellArray[row][column].SetCellMovingDirection(CellMovingDirection::RIGHT);
+			}
+
+			if (mBoardCellArray[row][column].GetCellType() == CellType::BUFF) {
+				mBoardCellArray[row][column].SetTexture(*mResourcesManager.GetTexture("buff"));
+			}
+
+			if (mBoardCellArray[row][column].GetCellType() == CellType::SNAKE_HEAD) {
+				mBoardCellArray[row][column].SetTexture(*mResourcesManager.GetTexture("snakeHead"));
+			}
+
+			if (mBoardCellArray[row][column].GetCellType() == CellType::SNAKE_BODY) {
+				mBoardCellArray[row][column].SetTexture(*mResourcesManager.GetTexture("snakeBody"));
+			}
+
+			if (mBoardCellArray[row][column].GetCellType() == CellType::SNAKE_TAIL) {
+				mBoardCellArray[row][column].SetTexture(*mResourcesManager.GetTexture("snakeTail"));
+			}
+
+
+
 			mRenderer->GetRenderWindow().draw(mBoardCellArray[row][column]);
 		}
 	}
+
+	mRenderer->GetRenderWindow().draw(mCurrentScore);
+	mRenderer->GetRenderWindow().draw(mHighestScore);
 }

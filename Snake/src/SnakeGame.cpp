@@ -16,7 +16,7 @@ namespace gm{
         mFont.loadFromFile("res/font.ttf");
 
 
-        mScenesManager.Add(new gm::Menu("menu", renderer, mScenesManager, mFont));
+        mScenesManager.Add(new gm::Menu("menu", renderer, mScenesManager, mFont, eventManager));
     }
 
     void SnakeGame::HandleEvents(){

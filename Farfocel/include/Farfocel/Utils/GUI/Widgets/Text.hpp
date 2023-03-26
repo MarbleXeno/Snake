@@ -13,6 +13,7 @@ namespace frg {
 		void SetFillColor(const sf::Color& color);
 
 		const sf::Vector2f& GetTextSize() { return { mText.getGlobalBounds().width, mText.getGlobalBounds().height }; }
+		void SetTextPosition(const sf::Vector2f& position);
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	private:

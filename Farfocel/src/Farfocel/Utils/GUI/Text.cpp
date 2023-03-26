@@ -26,6 +26,12 @@ void frg::Text::SetFillColor(const sf::Color& color)
 	mText.setFillColor(color);
 }
 
+void frg::Text::SetTextPosition(const sf::Vector2f& position)
+{
+	mText.setOrigin((mText.getLocalBounds().left + mText.getLocalBounds().width) / 2.f, (mText.getLocalBounds().top + mText.getLocalBounds().height) / 2.f);
+	mText.setPosition(position);
+}
+
 void frg::Text::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(mText);

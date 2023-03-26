@@ -34,6 +34,9 @@ namespace gm {
 		const bool& GetAlternativeControls();
 
 	private:
+		void RotateSprite(sf::Sprite& sprite, const CellMovingDirection& cellMovingDirection);
+
+
 		CellMovingDirection mNextCellMovingDirection;
 		std::string mSnakeName;
 		std::uint32_t mSnakeScore; // length
