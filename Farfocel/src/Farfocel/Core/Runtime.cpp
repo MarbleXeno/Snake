@@ -2,7 +2,7 @@
 
 namespace fr{
     Runtime::Runtime()
-        : mRenderWindow(nullptr), mEvent(nullptr){
+        : mRenderWindow(nullptr), mEvent(nullptr), mDrawImgui(false), mInputManager(){
 
     }
 
@@ -39,10 +39,13 @@ namespace fr{
 
         // Event Manager setup
         eventManager = fr::EventManager(renderer.GetRenderWindow(), renderer.GetWindowEvent());
+        mInputManager = fr::InputManager(renderer.GetRenderWindow());
         
         eventManager.AddBinding(sf::Event::Closed, true, [=]() { renderer.GetRenderWindow().close(); });
         eventManager.AddBinding(sf::Event::Resized, true, [=]() { renderer.ResizeView({ renderer.GetWindowEvent().size.width, renderer.GetWindowEvent().size.height }); });
-        
+
+        mInputManager.Bind(sf::Keyboard::Num0, false, [=]() {mDrawImgui = !mDrawImgui; });
+
         ImGui::SFML::Init(renderer.GetRenderWindow());
         
     }
@@ -51,6 +54,7 @@ namespace fr{
         while (renderer.GetRenderWindow().isOpen()){
 
             eventManager.Update();
+            mInputManager.UpdateKeyboard();
             HandleEvents();
 
             HandleInput();
@@ -61,7 +65,9 @@ namespace fr{
             renderer.GetRenderWindow().clear(sf::Color::Cyan);
             Render();
 
-            ImGui::SFML::Render(renderer.GetRenderWindow());
+            if(mDrawImgui)
+                ImGui::SFML::Render(renderer.GetRenderWindow());
+            
             renderer.GetRenderWindow().display();
         }
     }

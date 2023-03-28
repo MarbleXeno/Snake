@@ -12,6 +12,7 @@ gm::Board::Board(fr::Renderer& renderer, const float& tickDuration, const sf::Fo
 	mResourcesManager.LoadTexture("snakeBody", "res/snake_body.png");
 	mResourcesManager.LoadTexture("snakeTail", "res/snake_tail.png");
 	mResourcesManager.LoadTexture("buff", "res/buff.png");
+
 }
 
 gm::Board::~Board()

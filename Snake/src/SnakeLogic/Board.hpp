@@ -46,7 +46,6 @@ namespace gm {
 		sf::Vector2f mCellSize;
 
 		std::vector<Snake> mSnakes;
-
 		float mTickDuration;
 		float mBoardUpdateElapsedTime;
 

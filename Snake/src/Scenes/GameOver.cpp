@@ -1,7 +1,7 @@
 #include "GameOver.hpp"
 
 gm::GameOver::GameOver(const std::string& id, fr::Renderer& renderer, const std::uint32_t& currentScore, const std::uint32_t& topScore, const std::string& topScoreName, sf::Font& font, fr::EventManager& eventManager, fr::ScenesManager& scenesManager)
-	: IScene(id), mRenderer(&renderer), mFont(&font), mResourcesManager(), mInputManager(mRenderer->GetRenderWindow()), mCurrentScore(currentScore), mTopScore(topScore), mTopScoreName(topScoreName), mEventManager(&eventManager), mScenesManager(&scenesManager)
+	: IScene(id), mRenderer(&renderer), mFont(&font), mResourcesManager(), mInputManager(mRenderer->GetRenderWindow()), mCurrentScore(currentScore), mTopScore(topScore), mTopScoreName(topScoreName), mEventManager(&eventManager), mScenesManager(&scenesManager), mDrawImgui(false)
 {
 	mYouDiedText = frg::Text({ 600 / 2, 700 / 4 }, "Nie zyjesz", 80, 2, sf::Color::Red, *mFont);
 	mCurrentScoreText = frg::Text({ 600 / 2, 700 / 3 }, "Twoj wynik: " + std::to_string(mCurrentScore), 20, 1, sf::Color::White, *mFont);
@@ -26,6 +26,7 @@ gm::GameOver::~GameOver()
 
 void gm::GameOver::Start()
 {
+
 	mEventManager->AddBinding(sf::Event::TextEntered, true, [=]() {
 		if (mRenderer->GetWindowEvent().text.unicode == '\b') {
 			if (!mTopScoreNewName.empty())
@@ -104,6 +105,7 @@ void gm::GameOver::Draw()
 	else {
 		mRenderer->GetRenderWindow().draw(mUpoText);
 	}
+
 	mRenderer->GetRenderWindow().draw(mGoBackButton);
 	mRenderer->GetRenderWindow().draw(mGoBackMenuButton);
 }

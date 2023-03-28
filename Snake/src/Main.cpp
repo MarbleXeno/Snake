@@ -1,7 +1,7 @@
 #include <iostream>
 #include "SnakeGame.hpp"
 
-int WinMain()
+int main()
 {
     gm::SnakeGame snake = gm::SnakeGame();
     return 0;

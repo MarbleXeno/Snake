@@ -39,6 +39,8 @@ namespace gm {
 		const std::uint32_t& mTopScore;
 		const std::string& mTopScoreName;
 
+		bool mDrawImgui;
+
 		std::string mTopScoreNewName;
 
 		frg::Text mYouDiedText;

@@ -4,6 +4,7 @@
 #include "Farfocel/Core/Renderer.hpp"
 
 #include "Farfocel/Managers/EventManager.hpp"
+#include "Farfocel/Managers/InputManager.hpp"
 
 #include <imgui.h>
 #include <imgui-SFML.h>
@@ -31,6 +32,10 @@ namespace fr{
             fr::EventManager eventManager;
         private:
             void InitFarfocel();
+
+            bool mDrawImgui;
+
+            fr::InputManager mInputManager;
 
             sf::Event* mEvent;
             sf::RenderWindow* mRenderWindow;

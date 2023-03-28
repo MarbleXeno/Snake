@@ -1,0 +1,10 @@
+^C:\SRC\SNAKEONFARFOCEL\CMAKEFILES\3F744B04D133DECC2935412D4E82E94B\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/src/SnakeOnFarfocel -BC:/src/SnakeOnFarfocel --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/src/SnakeOnFarfocel/SnakeGame.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
