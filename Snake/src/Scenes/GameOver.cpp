@@ -60,6 +60,7 @@ void gm::GameOver::Update()
 
 		if (mInputManager.IsPressed(sf::Mouse::Left)) {
 			if (mCurrentScore > mTopScore) {
+				if (mTopScoreNewName.empty()) { mTopScoreNewName = "BEZIMIENNY"; }
 				std::string score = mTopScoreNewName + " " + std::to_string(mCurrentScore);
 				mScoreFile.open("score.txt", std::ofstream::out | std::ofstream::trunc);
 				mScoreFile << score;
@@ -77,6 +78,7 @@ void gm::GameOver::Update()
 
 		if (mInputManager.IsPressed(sf::Mouse::Left)) {
 			if (mCurrentScore > mTopScore) {
+				if (mTopScoreNewName.empty()) { mTopScoreNewName = "BEZIMIENNY"; }
 				std::string score = mTopScoreNewName + " " + std::to_string(mCurrentScore);
 				mScoreFile.open("score.txt", std::ofstream::out | std::ofstream::trunc);
 				mScoreFile << score;
