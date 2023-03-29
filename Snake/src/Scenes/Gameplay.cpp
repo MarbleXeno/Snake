@@ -16,7 +16,6 @@ void gm::Gameplay::Start()
 	std::uint32_t score = 0;
 
 
-
 	while (mScoreFile >> name >> score) {
 		mScores[name] = score;
 	}

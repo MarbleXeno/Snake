@@ -50,60 +50,86 @@ void gm::Board::GenerateBoard(const sf::Vector2i& cellCount, const sf::Vector2f&
 
 void gm::Board::Update()
 {
-
 	ImGui::Begin("Board Controls");
 	ImGui::SliderFloat("Tick Duration [ms]", &mTickDuration, 0.f, 100.f);
 
+
+	CellMovingDirection cellMovingDirection = mSnakes.back().GetSnakeHead().GetCellMovingDirection();
+
 	for (auto& snake : mSnakes) {
-		CellMovingDirection snakeMovingDirection;
+		if (mInputManager.IsPressed(sf::Keyboard::Up) || mInputManager.IsPressed(sf::Keyboard::W)) {
+			if (snake.GetNextCellMovingDirection() == CellMovingDirection::DOWN) {
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::DOWN);
+				snake.SetNextCellMovingDirection(CellMovingDirection::DOWN);
+				
+			}
+			else {
+				cellMovingDirection = CellMovingDirection::UP;
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::UP);
+				//snake.SetNextCellMovingDirection(CellMovingDirection::UP);
 
-		if (snake.GetAlternativeControls()) {
-			if (mInputManager.IsPressed(sf::Keyboard::Up) && snake.GetNextCellMovingDirection() != CellMovingDirection::DOWN)
-				snakeMovingDirection = CellMovingDirection::UP;
-			else if (mInputManager.IsPressed(sf::Keyboard::Down) && snake.GetNextCellMovingDirection() != CellMovingDirection::UP)
-				snakeMovingDirection = CellMovingDirection::DOWN;
-			else if (mInputManager.IsPressed(sf::Keyboard::Left) && snake.GetNextCellMovingDirection() != CellMovingDirection::RIGHT)
-				snakeMovingDirection = CellMovingDirection::LEFT;
-			else if (mInputManager.IsPressed(sf::Keyboard::Right) && snake.GetNextCellMovingDirection() != CellMovingDirection::LEFT)
-				snakeMovingDirection = CellMovingDirection::RIGHT;
-			else
-				snakeMovingDirection = snake.GetSnakeHead().GetCellMovingDirection();
+			}
 		}
-		else
-		{
-			if (mInputManager.IsPressed(sf::Keyboard::W) && snake.GetNextCellMovingDirection() != CellMovingDirection::DOWN)
-				snakeMovingDirection = CellMovingDirection::UP;
-			else if (mInputManager.IsPressed(sf::Keyboard::S) && snake.GetNextCellMovingDirection() != CellMovingDirection::UP)
-				snakeMovingDirection = CellMovingDirection::DOWN;
-			else if (mInputManager.IsPressed(sf::Keyboard::A) && snake.GetNextCellMovingDirection() != CellMovingDirection::RIGHT)
-				snakeMovingDirection = CellMovingDirection::LEFT;
-			else if (mInputManager.IsPressed(sf::Keyboard::D) && snake.GetNextCellMovingDirection() != CellMovingDirection::LEFT)
-				snakeMovingDirection = CellMovingDirection::RIGHT;
-			else
-				snakeMovingDirection = snake.GetSnakeHead().GetCellMovingDirection();
+		if (mInputManager.IsPressed(sf::Keyboard::Down) || mInputManager.IsPressed(sf::Keyboard::S)) {
+			if (snake.GetNextCellMovingDirection() == CellMovingDirection::UP) {
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::UP);
+				snake.SetNextCellMovingDirection(CellMovingDirection::UP);
+				
+			}
+			else {
+				cellMovingDirection = CellMovingDirection::DOWN;
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::DOWN);
+				//snake.SetNextCellMovingDirection(CellMovingDirection::DOWN);
+
+			}
+		}
+		if (mInputManager.IsPressed(sf::Keyboard::Left) || mInputManager.IsPressed(sf::Keyboard::A)) {
+			if (snake.GetNextCellMovingDirection() == CellMovingDirection::RIGHT) {
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::RIGHT);
+				snake.SetNextCellMovingDirection(CellMovingDirection::RIGHT);
+				
+			}
+			else {
+				cellMovingDirection = CellMovingDirection::LEFT;
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::LEFT);
+				//snake.SetNextCellMovingDirection(CellMovingDirection::LEFT);
+
+			}
+		}
+		if (mInputManager.IsPressed(sf::Keyboard::Right) || mInputManager.IsPressed(sf::Keyboard::D)) {
+			if (snake.GetNextCellMovingDirection() == CellMovingDirection::LEFT) {
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::LEFT);
+				snake.SetNextCellMovingDirection(CellMovingDirection::LEFT);
+				
+			}
+			else {
+				cellMovingDirection = CellMovingDirection::RIGHT;
+				snake.GetSnakeHead().SetCellMovingDirection(CellMovingDirection::RIGHT);
+				//snake.SetNextCellMovingDirection(CellMovingDirection::RIGHT);
+
+			}
 		}
 
-		snake.GetSnakeHead().SetCellMovingDirection(snakeMovingDirection);
-		snake.SetNextCellMovingDirection(snakeMovingDirection);
-	
+
 		if (ImGui::Button("Grow Snake")) {
 			Cell& nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
 			snake.Grow(nextMovingCell);
 		}
 	}
-
+	
+	
 	mBoardUpdateElapsedTime += mRenderer->GetDeltaTimeFloat();
 
 	if (mBoardUpdateElapsedTime > mTickDuration * mRenderer->GetDeltaTimeFloat()) {
 		for (auto& snake : mSnakes) {
+			snake.SetNextCellMovingDirection(cellMovingDirection);
 			Cell& nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
-			
+
 			if (snake.IsSelfIntersecting(nextMovingCell)) {
 				ImGui::End();
 				mIsOver = true;
 				return;
 			}
-
 
 			if (nextMovingCell.GetCellType() == CellType::EMPTY) {
 				Cell oldTailCell = snake.Move(nextMovingCell, true);
@@ -113,20 +139,21 @@ void gm::Board::Update()
 			if (nextMovingCell.GetCellType() == CellType::BUFF) {
 				nextMovingCell.SetCellMovingDirection(mSnakes.back().GetNextCellMovingDirection());
 				snake.Grow(nextMovingCell);
-				
+
 				mCurrentScore.SetString("Wynik: " + std::to_string(snake.GetSnakeScore()));
 				mCurrentScore.SetTextPosition({ 600 / 2, 620 });
-				if(mTickDuration > 1)
+				if (mTickDuration > 1)
 					mTickDuration -= 0.5f;
-			
+
 				PlaceBuff();
 			}
-		
+
 			ApplySnakeCellsToBoard();
-			
+
 		}
 		mBoardUpdateElapsedTime = 0.f;
 	}
+	
 	ImGui::End();
 }
 

@@ -9,7 +9,7 @@ gm::GameOver::GameOver(const std::string& id, fr::Renderer& renderer, const std:
 
 	if (currentScore > topScore) {
 		mTopScoreTextNew = frg::Text({ 600 / 2,700 / 2.4 }, "Wow, udalo ci sie pobic rekord!", 20, 1, sf::Color::Green, *mFont);
-		mTopScoreTextInformative = frg::Text({ 600 / 2,700 / 2.2 }, "Wpisz swoj nick: ", 20, 1, sf::Color::White, *mFont);
+		mTopScoreTextInformative = frg::Text({ 600 / 2,700 / 2.05 }, "Wpisz swoj nick:\n", 40, 1, sf::Color::Yellow, *mFont);
 	}
 	else {
 		mUpoText = frg::Text({ 600 / 2,700 / 2.4 }, "Do pobicia rekordu brakuje ci: " + std::to_string(mTopScore - mCurrentScore), 20, 1, sf::Color::White, *mFont);
@@ -32,7 +32,7 @@ void gm::GameOver::Start()
 			if (!mTopScoreNewName.empty())
 				mTopScoreNewName.erase(mTopScoreNewName.size() - 1, 1);
 		}
-		else if (mRenderer->GetWindowEvent().text.unicode < 128) {
+		else if (mRenderer->GetWindowEvent().text.unicode < 128 && mRenderer->GetWindowEvent().text.unicode != 32) {
 			mTopScoreNewName += mRenderer->GetWindowEvent().text.unicode;
 		}
 		});
@@ -51,8 +51,8 @@ void gm::GameOver::HandleInput()
 void gm::GameOver::Update()
 {
 	if (mCurrentScore > mTopScore) {
-		mTopScoreTextInformative.SetString("Wpisz swoj nick: " + mTopScoreNewName);
-		mTopScoreTextInformative.SetTextPosition({ 600 / 2,700 / 2.2 });
+		mTopScoreTextInformative.SetString("Wpisz swoj nick:\n" + mTopScoreNewName);
+		mTopScoreTextInformative.SetTextPosition({ 600 / 2,700 / 2.05 });
 	}
 
 	if (mGoBackButton.GetBoundingBoxSize().contains(mInputManager.GetMouseRelativeCoords())) {
