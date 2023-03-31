@@ -112,7 +112,7 @@ void gm::Board::Update()
 
 
 		if (ImGui::Button("Grow Snake")) {
-			Cell& nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
+			Cell nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
 			snake.Grow(nextMovingCell);
 		}
 	}
@@ -123,7 +123,7 @@ void gm::Board::Update()
 	if (mBoardUpdateElapsedTime > mTickDuration * mRenderer->GetDeltaTimeFloat()) {
 		for (auto& snake : mSnakes) {
 			snake.SetNextCellMovingDirection(cellMovingDirection);
-			Cell& nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
+			Cell nextMovingCell = GetNextCell(snake.GetSnakeHead(), snake.GetNextCellMovingDirection());
 
 			if (snake.IsSelfIntersecting(nextMovingCell)) {
 				ImGui::End();

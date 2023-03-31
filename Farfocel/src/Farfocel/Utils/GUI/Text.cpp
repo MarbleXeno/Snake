@@ -1,7 +1,7 @@
 #include "Farfocel/Utils/GUI/Widgets/Text.hpp"
 
 frg::Text::Text(const sf::Vector2f& position, const std::string& textString, const std::uint16_t& characterSize, const std::uint16_t& outlineSize, const sf::Color& fillColor, const sf::Font& font)
-	: mString(textString), mText(), mFont(&font)
+	: mString(textString), mFont(&font), mText()
 {
 	mText.setFont(*mFont);
 	mText.setString(mString);

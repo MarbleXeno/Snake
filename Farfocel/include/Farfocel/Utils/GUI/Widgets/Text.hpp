@@ -12,7 +12,7 @@ namespace frg {
 		void SetString(const std::string& textString);
 		void SetFillColor(const sf::Color& color);
 
-		const sf::Vector2f& GetTextSize() { return { mText.getGlobalBounds().width, mText.getGlobalBounds().height }; }
+		const sf::Vector2f GetTextSize() { return { mText.getGlobalBounds().width, mText.getGlobalBounds().height }; }
 		void SetTextPosition(const sf::Vector2f& position);
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -20,6 +20,6 @@ namespace frg {
 		std::string mString;
 		sf::Text mText;
 		
-		const sf::Font* mFont = nullptr;
+		const sf::Font* mFont;
 	};
 }

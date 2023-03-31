@@ -11,11 +11,11 @@ gm::Menu::~Menu()
 
 void gm::Menu::Start()
 {
-	mSnakeText = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f - 100.f }, "Wonz", 100, 2, sf::Color::White, *mFont);
+    mSnakeText = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f - 100.f }, "Wonz", 100, 2, sf::Color::White, *mFont);
 
 	mStartButton = frg::Button({ mRenderer->GetRenderWindow().getSize().x/2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 200.f}, "START", 50, sf::Color(0,0,0,0), sf::Color::White, *mFont);
 	
-	mCreditsText = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 300.f }, "Farfocel © 2 LO Raciborz - 2m", 20, 2, sf::Color::White, *mFont);
+	mCreditsText = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 300.f }, "Farfocel ï¿½ 2 LO Raciborz - 2m", 20, 2, sf::Color::White, *mFont);
 	mCreditsTextTwo = frg::Text({ mRenderer->GetRenderWindow().getSize().x / 2.f, mRenderer->GetRenderWindow().getSize().y / 2.f + 322.f }, "Papaj / Grzes / Heino", 20, 2, sf::Color::White, *mFont);
 	
 	mResourcesManager.LoadTexture("background", "res/menu_background.png");

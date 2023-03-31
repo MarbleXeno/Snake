@@ -15,8 +15,8 @@ gm::GameOver::GameOver(const std::string& id, fr::Renderer& renderer, const std:
 		mUpoText = frg::Text({ 600 / 2,700 / 2.4 }, "Do pobicia rekordu brakuje ci: " + std::to_string(mTopScore - mCurrentScore), 20, 1, sf::Color::White, *mFont);
 	}
 
-	mGoBackButton = frg::Button({ 600 / 2,700 / 1.5 }, "ZAGRAJ PONOWNIE", 35, sf::Color::Color(0, 0, 0, 0), sf::Color::White, *mFont);
-	mGoBackMenuButton = frg::Button({ 600 / 2,700 / 1.2 }, "WROC DO MENU", 35, sf::Color::Color(0, 0, 0, 0), sf::Color::White, *mFont);
+	mGoBackButton = frg::Button({ 600 / 2,700 / 1.5 }, "ZAGRAJ PONOWNIE", 35, sf::Color(0, 0, 0, 0), sf::Color::White, *mFont);
+	mGoBackMenuButton = frg::Button({ 600 / 2,700 / 1.2 }, "WROC DO MENU", 35, sf::Color(0, 0, 0, 0), sf::Color::White, *mFont);
 }
 
 gm::GameOver::~GameOver()
