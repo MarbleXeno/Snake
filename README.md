@@ -1,2 +1,3 @@
-Snake clone made with Farfocel
-The code's terrible and I don't care. I made it only to get a good score
+Snake clone made with Farfocel.
+
+I made it as my school assignment, the code is pretty bad but works, so that's what matters.
